@@ -8,7 +8,6 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -21,14 +20,19 @@ import java.util.regex.Pattern;
 @Service
 public class TelegramBotUpdateListener implements UpdatesListener {
 
-    private Logger log = LoggerFactory.getLogger(TelegramBotUpdateListener.class);
+    private final Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
+    private final LocalDateTime timeSendMessage = LocalDateTime.parse("10.11.2022 17:00",
+            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
 
-    @Autowired
-    private TelegramBot telegramBot;
+    private final Logger log = LoggerFactory.getLogger(TelegramBotUpdateListener.class);
+
+
+    private final TelegramBot telegramBot;
 
     private final TelegramBotRepository telegramBotRepository;
 
-    public TelegramBotUpdateListener(TelegramBotRepository telegramBotRepository) {
+    public TelegramBotUpdateListener(TelegramBot telegramBot, TelegramBotRepository telegramBotRepository) {
+        this.telegramBot = telegramBot;
         this.telegramBotRepository = telegramBotRepository;
     }
 
@@ -47,14 +51,11 @@ public class TelegramBotUpdateListener implements UpdatesListener {
                 SendMessage mess = new SendMessage(id, "Приветствую тебя, землянин!");
                 telegramBot.execute(mess);
 
-                Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
 
                 Matcher matcher = pattern.matcher("10.11.2022 17:00 Сделать домашнюю работу");
                 if (matcher.matches()) {
                     String date = matcher.group(1);
                     String item = matcher.group(3);
-                    LocalDateTime timeSendMessage = LocalDateTime.parse("10.11.2022 17:00",
-                            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
                     NotificationTask notificationTask = new NotificationTask(id, message, timeSendMessage);
                     telegramBotRepository.save(notificationTask);
                 }
