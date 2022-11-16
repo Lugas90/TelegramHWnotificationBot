@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 @Service
 public class TelegramBotUpdateListener implements UpdatesListener {
 
@@ -43,28 +41,28 @@ public class TelegramBotUpdateListener implements UpdatesListener {
         telegramBot.setUpdatesListener(this);
     }
 
-    public int process (List<Update> updates){
+    public int process(List<Update> updates) {
         updates.forEach(update -> {
             log.info("Processing update: {}", update);
             Long chatId = update.message().chat().id();
             String message = update.message().text();
+            Matcher matcher = pattern.matcher(message);
 
-            if (update.message().text().equals("/start")) {
+            if ("/start".equals(message)) {
                 SendMessage mess = new SendMessage(chatId, "Приветствую тебя, землянин!");
                 telegramBot.execute(mess);
 
 
-                Matcher matcher = pattern.matcher("10.11.2022 17:00 Сделать домашнюю работу");
-                if (matcher.matches()) {
-                    String date = matcher.group(1);
-                    String item = matcher.group(3);
-                    NotificationTask notificationTask = new NotificationTask(chatId, message, timeSendMessage);
-                    telegramBotRepository.save(notificationTask);
-                }
+            } else if (matcher.matches()) {
+                String date = matcher.group(1);
+                String item = matcher.group(3);
+                NotificationTask notificationTask = new NotificationTask(chatId, item,
+                        LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+                telegramBotRepository.save(notificationTask);
+                SendMessage mess2 = new SendMessage(chatId, "Твоя задача сохранена");
+                telegramBot.execute(mess2);
             }
-
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
-
 }

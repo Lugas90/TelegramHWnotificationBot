@@ -1,11 +1,13 @@
 -- liquibase formatted sql
 
 -- changeSet eLugovoy: 1
-CREATE TABLE notificationTask (
-    chatId          INTEGER PRIMARY KEY,
-    message         TEXT,
-    timeSendMessage TIMESTAMP
+CREATE TABLE notification_task
+(
+    id                BIGSERIAL PRIMARY KEY,
+    chat_id           BIGINT,
+    message           TEXT,
+    time_send_message TIMESTAMP
 );
 
--- changeSet eLugovoy: 2
-DROP TABLE notificationTask;
+
+
