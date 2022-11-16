@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @Service
 public class TelegramBotUpdateListener implements UpdatesListener {
 
@@ -44,11 +46,11 @@ public class TelegramBotUpdateListener implements UpdatesListener {
     public int process (List<Update> updates){
         updates.forEach(update -> {
             log.info("Processing update: {}", update);
-            Long id = update.message().chat().id();
+            Long chatId = update.message().chat().id();
             String message = update.message().text();
 
             if (update.message().text().equals("/start")) {
-                SendMessage mess = new SendMessage(id, "Приветствую тебя, землянин!");
+                SendMessage mess = new SendMessage(chatId, "Приветствую тебя, землянин!");
                 telegramBot.execute(mess);
 
 
@@ -56,7 +58,7 @@ public class TelegramBotUpdateListener implements UpdatesListener {
                 if (matcher.matches()) {
                     String date = matcher.group(1);
                     String item = matcher.group(3);
-                    NotificationTask notificationTask = new NotificationTask(id, message, timeSendMessage);
+                    NotificationTask notificationTask = new NotificationTask(chatId, message, timeSendMessage);
                     telegramBotRepository.save(notificationTask);
                 }
             }
